@@ -114,6 +114,7 @@ class grade_control {
         $data->timeremainingstr = $due;
 
         require_once($CFG->dirroot . '/mod/externalassignment/classes/form/grader_form.php');
+        $data->context = $this->get_context();
         $mform = new grader_form(null, $data);
 
         // Form processing and displaying is done here.
@@ -128,6 +129,43 @@ class grade_control {
                 } else {
                     $result = $DB->update_record('externalassignment_grades', $grade->to_stdclass());
                 }
+
+                // Save files for externalfeedback.
+                $formdata = file_postupdate_standard_editor(
+                    $formdata,
+                    'externalfeedback',
+                    [
+                        'subdirs' => 0,
+                        'maxbytes' => $CFG->maxbytes ?? 0,
+                        'maxfiles' => EDITOR_UNLIMITED_FILES,
+                        'context' => $this->get_context(),
+                    ],
+                    $this->get_context(),
+                    'mod_externalassignment',
+                    'externalfeedback',
+                    $grade->get_id()
+                );
+
+                // Save files for manualfeedback.
+                $formdata = file_postupdate_standard_editor(
+                    $formdata,
+                    'manualfeedback',
+                    [
+                        'subdirs' => 0,
+                        'maxbytes' => $CFG->maxbytes ?? 0,
+                        'maxfiles' => EDITOR_UNLIMITED_FILES,
+                        'context' => $this->get_context(),
+                    ],
+                    $this->get_context(),
+                    'mod_externalassignment',
+                    'manualfeedback',
+                    $grade->get_id()
+                );
+
+                // Update grade record with processed feedback text.
+                $grade->set_externalfeedback($formdata->externalfeedback);
+                $grade->set_manualfeedback($formdata->manualfeedback);
+                $DB->update_record('externalassignment_grades', $grade->to_stdclass());
 
                 $gradevalues = new \stdClass();
                 $gradevalues->userid = $this->get_userid();
@@ -165,11 +203,45 @@ class grade_control {
                         $data->externalassignment = $grade->get_externalassignment();
                         $data->status = $student->get_status();
                         $data->externalgrade = $grade->get_externalgrade();
-                        $data->externalfeedback['text'] = $grade->get_externalfeedback();
-                        $data->externalfeedback['format'] = 1;
+
+                        // Prepare draft file area for externalfeedback.
+                        $draftitemid = file_get_submitted_draft_itemid('externalfeedback');
+                        $data->externalfeedback['text'] = file_prepare_draft_area(
+                            $draftitemid,
+                            $this->get_context()->id,
+                            'mod_externalassignment',
+                            'externalfeedback',
+                            $grade->get_id(),
+                            [
+                                'subdirs' => 0,
+                                'maxbytes' => $CFG->maxbytes ?? 0,
+                                'maxfiles' => EDITOR_UNLIMITED_FILES,
+                            ],
+                            $grade->get_externalfeedback()
+                        );
+                        $data->externalfeedback['itemid'] = $draftitemid;
+                        $data->externalfeedback['format'] = FORMAT_HTML;
+
                         $data->manualgrade = $grade->get_manualgrade();
-                        $data->manualfeedback['text'] = $grade->get_manualfeedback();
-                        $data->manualfeedback['format'] = 1;
+
+                        // Prepare draft file area for manualfeedback.
+                        $draftitemid = file_get_submitted_draft_itemid('manualfeedback');
+                        $data->manualfeedback['text'] = file_prepare_draft_area(
+                            $draftitemid,
+                            $this->get_context()->id,
+                            'mod_externalassignment',
+                            'manualfeedback',
+                            $grade->get_id(),
+                            [
+                                'subdirs' => 0,
+                                'maxbytes' => $CFG->maxbytes ?? 0,
+                                'maxfiles' => EDITOR_UNLIMITED_FILES,
+                            ],
+                            $grade->get_manualfeedback()
+                        );
+                        $data->manualfeedback['itemid'] = $draftitemid;
+                        $data->manualfeedback['format'] = FORMAT_HTML;
+
                         $data->gradefinal = $grade->get_externalgrade() + $grade->get_manualgrade();
                     }
                 }
