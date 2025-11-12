@@ -40,6 +40,7 @@ class grader_form extends moodleform {
     public function definition() {
 
         $mform = $this->_form;
+        $context = $this->_customdata->context ?? null;
         $mform->addElement(
             'header',
             'grading',
@@ -72,9 +73,9 @@ class grader_form extends moodleform {
         $mform->addElement(
             'editor',
             'externalfeedback',
-            get_string('feedback',
-                null,
-                self::editor_options())
+            get_string('feedback'),
+            null,
+            self::editor_options($context)
         );
         $mform->setType('externalfeedback', PARAM_RAW);
 
@@ -96,7 +97,7 @@ class grader_form extends moodleform {
             'client'
         );
 
-        $mform->addElement('editor', 'manualfeedback', get_string('feedback'));
+        $mform->addElement('editor', 'manualfeedback', get_string('feedback'), null, self::editor_options($context));
         $mform->setType('manualfeedback', PARAM_RAW);
 
         $mform->addElement('hidden', 'externalassignmentid', $this->_customdata->externalassignment);
@@ -125,18 +126,20 @@ class grader_form extends moodleform {
 
     /**
      * returns an array of options for the editor
+     * @param \context|null $context The context for file management
      * @return array  options for the editor
      */
-    private static function editor_options(): array {
+    private static function editor_options(?\context $context = null): array {
+        global $CFG;
         return [
             'subdirs' => 0,
-            'maxbytes' => 0,
-            'maxfiles' => 0,
+            'maxbytes' => $CFG->maxbytes ?? 0,
+            'maxfiles' => EDITOR_UNLIMITED_FILES,
             'changeformat' => FORMAT_MARKDOWN,
-            'context' => null,
+            'context' => $context,
             'noclean' => 0,
             'trusttext' => true,
-            'enable_filemanagement' => false,
+            'enable_filemanagement' => true,
         ];
     }
 

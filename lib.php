@@ -348,3 +348,64 @@ function mod_externalassignment_core_calendar_provide_event_action(
         true
     );
 }
+
+/**
+ * Serve the files from the externalassignment file areas
+ *
+ * @param stdClass $course the course object
+ * @param stdClass $cm the course module object
+ * @param context $context the context
+ * @param string $filearea the name of the file area
+ * @param array $args extra arguments (itemid, path)
+ * @param bool $forcedownload whether or not force download
+ * @param array $options additional options affecting the file serving
+ * @return bool false if the file not found, just send the file otherwise and do not return anything
+ */
+function externalassignment_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    global $DB;
+
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return false;
+    }
+
+    require_login($course, true, $cm);
+
+    // Check if the file area is one of the feedback areas.
+    if ($filearea !== 'externalfeedback' && $filearea !== 'manualfeedback') {
+        return false;
+    }
+
+    $itemid = array_shift($args);
+    $filename = array_pop($args);
+
+    if (!$args) {
+        $filepath = '/';
+    } else {
+        $filepath = '/' . implode('/', $args) . '/';
+    }
+
+    // Retrieve the file from the Files API.
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, 'mod_externalassignment', $filearea, $itemid, $filepath, $filename);
+    if (!$file) {
+        return false;
+    }
+
+    // Check capability to review grades (teachers) or if the user is viewing their own feedback.
+    $grade = $DB->get_record('externalassignment_grades', ['id' => $itemid], '*', IGNORE_MISSING);
+    if ($grade) {
+        // Allow teachers with review capability.
+        if (has_capability('mod/externalassignment:reviewgrades', $context)) {
+            send_stored_file($file, 0, 0, $forcedownload, $options);
+            return true;
+        }
+        // Allow students to view their own feedback.
+        global $USER;
+        if ($grade->userid == $USER->id && has_capability('mod/externalassignment:view', $context)) {
+            send_stored_file($file, 0, 0, $forcedownload, $options);
+            return true;
+        }
+    }
+
+    return false;
+}
