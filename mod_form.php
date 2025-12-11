@@ -30,7 +30,7 @@ require_once($CFG->dirroot . '/course/moodleform_mod.php');
 /**
  * Assignment program settings form.
  *
- * @package   mod_assign
+ * @package   mod_externalassignment
  */
 class mod_externalassignment_mod_form extends moodleform_mod {
     /**
@@ -38,6 +38,9 @@ class mod_externalassignment_mod_form extends moodleform_mod {
      * @return void
      */
     public function definition() {
+        global $PAGE;
+        $PAGE->requires->js_call_amd('mod_externalassignment/date_sync', 'init');
+        
         $mform =& $this->_form;
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
