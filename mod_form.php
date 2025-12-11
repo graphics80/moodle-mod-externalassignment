@@ -38,6 +38,9 @@ class mod_externalassignment_mod_form extends moodleform_mod {
      * @return void
      */
     public function definition() {
+        global $PAGE;
+        $PAGE->requires->js_call_amd('mod_externalassignment/date_sync', 'init');
+        
         $mform =& $this->_form;
         $mform->addElement('header', 'general', get_string('general', 'form'));
 

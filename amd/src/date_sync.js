@@ -1,0 +1,91 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Javascript to sync due date with cut-off date.
+ *
+ * @module     mod_externalassignment/date_sync
+ * @copyright  2024 Marcel Suter <marcel@ghwalin.ch>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+export const init = () => {
+    // Get the cutoffdate fields (enabled checkbox and date/time selectors)
+    const cutoffdateEnabled = document.getElementById('id_cutoffdate_enabled');
+    const cutoffdateDay = document.getElementById('id_cutoffdate_day');
+    const cutoffdateMonth = document.getElementById('id_cutoffdate_month');
+    const cutoffdateYear = document.getElementById('id_cutoffdate_year');
+    const cutoffdateHour = document.getElementById('id_cutoffdate_hour');
+    const cutoffdateMinute = document.getElementById('id_cutoffdate_minute');
+
+    if (!cutoffdateEnabled || !cutoffdateDay || !cutoffdateMonth || 
+        !cutoffdateYear || !cutoffdateHour || !cutoffdateMinute) {
+        return; // Elements not found, exit gracefully
+    }
+
+    // Add event listeners to cutoffdate fields
+    cutoffdateEnabled.addEventListener('change', syncDates);
+    cutoffdateDay.addEventListener('change', syncDates);
+    cutoffdateMonth.addEventListener('change', syncDates);
+    cutoffdateYear.addEventListener('change', syncDates);
+    cutoffdateHour.addEventListener('change', syncDates);
+    cutoffdateMinute.addEventListener('change', syncDates);
+};
+
+/**
+ * Sync the due date with the cut-off date
+ */
+function syncDates() {
+    const cutoffdateEnabled = document.getElementById('id_cutoffdate_enabled');
+    
+    // Only sync if cutoffdate is enabled
+    if (!cutoffdateEnabled.checked) {
+        return;
+    }
+
+    // Get cutoffdate values
+    const cutoffdateDay = document.getElementById('id_cutoffdate_day').value;
+    const cutoffdateMonth = document.getElementById('id_cutoffdate_month').value;
+    const cutoffdateYear = document.getElementById('id_cutoffdate_year').value;
+    const cutoffdateHour = document.getElementById('id_cutoffdate_hour').value;
+    const cutoffdateMinute = document.getElementById('id_cutoffdate_minute').value;
+
+    // Get duedate elements
+    const duedateEnabled = document.getElementById('id_duedate_enabled');
+    const duedateDay = document.getElementById('id_duedate_day');
+    const duedateMonth = document.getElementById('id_duedate_month');
+    const duedateYear = document.getElementById('id_duedate_year');
+    const duedateHour = document.getElementById('id_duedate_hour');
+    const duedateMinute = document.getElementById('id_duedate_minute');
+
+    if (!duedateEnabled || !duedateDay || !duedateMonth || 
+        !duedateYear || !duedateHour || !duedateMinute) {
+        return; // Elements not found, exit gracefully
+    }
+
+    // Enable duedate if not already enabled
+    if (!duedateEnabled.checked) {
+        duedateEnabled.checked = true;
+        // Trigger change event to enable the date fields
+        duedateEnabled.dispatchEvent(new Event('change'));
+    }
+
+    // Set duedate values to match cutoffdate
+    duedateDay.value = cutoffdateDay;
+    duedateMonth.value = cutoffdateMonth;
+    duedateYear.value = cutoffdateYear;
+    duedateHour.value = cutoffdateHour;
+    duedateMinute.value = cutoffdateMinute;
+}
