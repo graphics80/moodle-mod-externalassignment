@@ -100,6 +100,24 @@ class mod_externalassignment_mod_form extends moodleform_mod {
     }
 
     /**
+     * Prepares the form data before loading
+     *
+     * Maps the database field names to form field names, especially for completion rules
+     * which use suffixed names.
+     *
+     * @param array $defaultvalues
+     * @return void
+     */
+    public function data_preprocessing(&$defaultvalues) {
+        parent::data_preprocessing($defaultvalues);
+
+        // Map needspassinggrade from database to the suffixed form field name.
+        if (isset($defaultvalues['needspassinggrade'])) {
+            $defaultvalues[$this->get_suffixed_name('needspassinggrade')] = $defaultvalues['needspassinggrade'];
+        }
+    }
+
+    /**
      * Validates the data in the form
      * @param array $data  The data entered in the form that needs to be validate
      * @param array $files The files uploaded in the form
