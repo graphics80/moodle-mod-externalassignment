@@ -32,6 +32,8 @@ export const init = () => {
 
     if (!cutoffdateEnabled || !cutoffdateDay || !cutoffdateMonth || 
         !cutoffdateYear || !cutoffdateHour || !cutoffdateMinute) {
+        // eslint-disable-next-line no-console
+        console.warn('mod_externalassignment/date_sync: Cut-off date form elements not found');
         return; // Elements not found, exit gracefully
     }
 
@@ -72,6 +74,8 @@ function syncDates() {
 
     if (!duedateEnabled || !duedateDay || !duedateMonth || 
         !duedateYear || !duedateHour || !duedateMinute) {
+        // eslint-disable-next-line no-console
+        console.warn('mod_externalassignment/date_sync: Due date form elements not found');
         return; // Elements not found, exit gracefully
     }
 
