@@ -21,75 +21,83 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+// Cache DOM elements
+let cutoffdateElements = null;
+let duedateElements = null;
+
 export const init = () => {
     // Get the cutoffdate fields (enabled checkbox and date/time selectors)
-    const cutoffdateEnabled = document.getElementById('id_cutoffdate_enabled');
-    const cutoffdateDay = document.getElementById('id_cutoffdate_day');
-    const cutoffdateMonth = document.getElementById('id_cutoffdate_month');
-    const cutoffdateYear = document.getElementById('id_cutoffdate_year');
-    const cutoffdateHour = document.getElementById('id_cutoffdate_hour');
-    const cutoffdateMinute = document.getElementById('id_cutoffdate_minute');
+    cutoffdateElements = {
+        enabled: document.getElementById('id_cutoffdate_enabled'),
+        day: document.getElementById('id_cutoffdate_day'),
+        month: document.getElementById('id_cutoffdate_month'),
+        year: document.getElementById('id_cutoffdate_year'),
+        hour: document.getElementById('id_cutoffdate_hour'),
+        minute: document.getElementById('id_cutoffdate_minute')
+    };
 
-    if (!cutoffdateEnabled || !cutoffdateDay || !cutoffdateMonth || 
-        !cutoffdateYear || !cutoffdateHour || !cutoffdateMinute) {
+    if (!cutoffdateElements.enabled || !cutoffdateElements.day || !cutoffdateElements.month || 
+        !cutoffdateElements.year || !cutoffdateElements.hour || !cutoffdateElements.minute) {
         // eslint-disable-next-line no-console
         console.warn('mod_externalassignment/date_sync: Cut-off date form elements not found');
         return; // Elements not found, exit gracefully
     }
 
+    // Get the duedate fields
+    duedateElements = {
+        enabled: document.getElementById('id_duedate_enabled'),
+        day: document.getElementById('id_duedate_day'),
+        month: document.getElementById('id_duedate_month'),
+        year: document.getElementById('id_duedate_year'),
+        hour: document.getElementById('id_duedate_hour'),
+        minute: document.getElementById('id_duedate_minute')
+    };
+
+    if (!duedateElements.enabled || !duedateElements.day || !duedateElements.month || 
+        !duedateElements.year || !duedateElements.hour || !duedateElements.minute) {
+        // eslint-disable-next-line no-console
+        console.warn('mod_externalassignment/date_sync: Due date form elements not found');
+        return; // Elements not found, exit gracefully
+    }
+
     // Add event listeners to cutoffdate fields
-    cutoffdateEnabled.addEventListener('change', syncDates);
-    cutoffdateDay.addEventListener('change', syncDates);
-    cutoffdateMonth.addEventListener('change', syncDates);
-    cutoffdateYear.addEventListener('change', syncDates);
-    cutoffdateHour.addEventListener('change', syncDates);
-    cutoffdateMinute.addEventListener('change', syncDates);
+    cutoffdateElements.enabled.addEventListener('change', syncDates);
+    cutoffdateElements.day.addEventListener('change', syncDates);
+    cutoffdateElements.month.addEventListener('change', syncDates);
+    cutoffdateElements.year.addEventListener('change', syncDates);
+    cutoffdateElements.hour.addEventListener('change', syncDates);
+    cutoffdateElements.minute.addEventListener('change', syncDates);
 };
 
 /**
  * Sync the due date with the cut-off date
  */
 function syncDates() {
-    const cutoffdateEnabled = document.getElementById('id_cutoffdate_enabled');
-    
     // Only sync if cutoffdate is enabled
-    if (!cutoffdateEnabled.checked) {
+    if (!cutoffdateElements.enabled.checked) {
         return;
     }
 
-    // Get cutoffdate values
-    const cutoffdateDay = document.getElementById('id_cutoffdate_day').value;
-    const cutoffdateMonth = document.getElementById('id_cutoffdate_month').value;
-    const cutoffdateYear = document.getElementById('id_cutoffdate_year').value;
-    const cutoffdateHour = document.getElementById('id_cutoffdate_hour').value;
-    const cutoffdateMinute = document.getElementById('id_cutoffdate_minute').value;
-
-    // Get duedate elements
-    const duedateEnabled = document.getElementById('id_duedate_enabled');
-    const duedateDay = document.getElementById('id_duedate_day');
-    const duedateMonth = document.getElementById('id_duedate_month');
-    const duedateYear = document.getElementById('id_duedate_year');
-    const duedateHour = document.getElementById('id_duedate_hour');
-    const duedateMinute = document.getElementById('id_duedate_minute');
-
-    if (!duedateEnabled || !duedateDay || !duedateMonth || 
-        !duedateYear || !duedateHour || !duedateMinute) {
-        // eslint-disable-next-line no-console
-        console.warn('mod_externalassignment/date_sync: Due date form elements not found');
-        return; // Elements not found, exit gracefully
-    }
+    // Get cutoffdate values from cached elements
+    const cutoffdateValues = {
+        day: cutoffdateElements.day.value,
+        month: cutoffdateElements.month.value,
+        year: cutoffdateElements.year.value,
+        hour: cutoffdateElements.hour.value,
+        minute: cutoffdateElements.minute.value
+    };
 
     // Enable duedate if not already enabled
-    if (!duedateEnabled.checked) {
-        duedateEnabled.checked = true;
+    if (!duedateElements.enabled.checked) {
+        duedateElements.enabled.checked = true;
         // Trigger change event to enable the date fields
-        duedateEnabled.dispatchEvent(new Event('change'));
+        duedateElements.enabled.dispatchEvent(new Event('change'));
     }
 
     // Set duedate values to match cutoffdate
-    duedateDay.value = cutoffdateDay;
-    duedateMonth.value = cutoffdateMonth;
-    duedateYear.value = cutoffdateYear;
-    duedateHour.value = cutoffdateHour;
-    duedateMinute.value = cutoffdateMinute;
+    duedateElements.day.value = cutoffdateValues.day;
+    duedateElements.month.value = cutoffdateValues.month;
+    duedateElements.year.value = cutoffdateValues.year;
+    duedateElements.hour.value = cutoffdateValues.hour;
+    duedateElements.minute.value = cutoffdateValues.minute;
 }
