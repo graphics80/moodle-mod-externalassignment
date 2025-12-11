@@ -30,7 +30,7 @@ require_once($CFG->dirroot . '/course/moodleform_mod.php');
 /**
  * Assignment program settings form.
  *
- * @package   mod_assign
+ * @package   mod_externalassignment
  */
 class mod_externalassignment_mod_form extends moodleform_mod {
     /**
